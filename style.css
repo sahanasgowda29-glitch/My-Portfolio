@@ -1345,6 +1345,11 @@ main {
   opacity: 1;
 }
 
+.is-touching .custom-cursor,
+.is-touching .custom-cursor-dot {
+  opacity: 1;
+}
+
 .has-custom-cursor .custom-cursor.is-hovering {
   width: 42px;
   height: 42px;

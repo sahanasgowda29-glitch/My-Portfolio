@@ -106,28 +106,57 @@ const customCursorDot = document.querySelector(".custom-cursor-dot");
 const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-if (customCursor && customCursorDot && finePointer.matches && !reducedMotion.matches) {
-  document.documentElement.classList.add("has-custom-cursor");
-
-  document.addEventListener("pointermove", (event) => {
-    if (event.pointerType !== "mouse") return;
-
-    const position = `translate3d(${event.clientX}px, ${event.clientY}px, 0) translate(-50%, -50%)`;
+if (customCursor && customCursorDot) {
+  const setCursorPosition = (x, y) => {
+    const position = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
     customCursor.style.transform = position;
     customCursorDot.style.transform = position;
+  };
 
-    const isInteractive = event.target instanceof Element
-      && event.target.closest("a, button, input, textarea, select, [role='button']");
-    customCursor.classList.toggle("is-hovering", Boolean(isInteractive));
+  if (finePointer.matches && !reducedMotion.matches) {
+    document.documentElement.classList.add("has-custom-cursor");
+
+    document.addEventListener("pointermove", (event) => {
+      if (event.pointerType !== "mouse") return;
+
+      setCursorPosition(event.clientX, event.clientY);
+
+      const isInteractive = event.target instanceof Element
+        && event.target.closest("a, button, input, textarea, select, [role='button']");
+      customCursor.classList.toggle("is-hovering", Boolean(isInteractive));
+    });
+
+    document.documentElement.addEventListener("pointerleave", () => {
+      customCursor.style.opacity = "0";
+      customCursorDot.style.opacity = "0";
+    });
+
+    document.documentElement.addEventListener("pointerenter", () => {
+      customCursor.style.opacity = "";
+      customCursorDot.style.opacity = "";
+    });
+  }
+
+  document.addEventListener("pointerdown", (event) => {
+    if (event.pointerType !== "touch") return;
+
+    setCursorPosition(event.clientX, event.clientY);
+    document.documentElement.classList.add("is-touching");
   });
 
-  document.documentElement.addEventListener("pointerleave", () => {
-    customCursor.style.opacity = "0";
-    customCursorDot.style.opacity = "0";
+  document.addEventListener("pointermove", (event) => {
+    if (event.pointerType !== "touch") return;
+
+    setCursorPosition(event.clientX, event.clientY);
+    document.documentElement.classList.add("is-touching");
   });
 
-  document.documentElement.addEventListener("pointerenter", () => {
-    customCursor.style.opacity = "";
-    customCursorDot.style.opacity = "";
-  });
+  const hideTouchCursor = (event) => {
+    if (event.pointerType === "touch") {
+      document.documentElement.classList.remove("is-touching");
+    }
+  };
+
+  document.addEventListener("pointerup", hideTouchCursor);
+  document.addEventListener("pointercancel", hideTouchCursor);
 }
